@@ -1,0 +1,31 @@
+# scripts/data_collection.py
+
+import requests
+import pandas as pd
+
+def fetch_historical_data(api_url, symbol, interval, start_time, end_time):
+    """
+    Fetch historical data for a specific cryptocurrency.
+    
+    :param api_url: Base URL of the cryptocurrency API
+    :param symbol: Trading symbol (e.g., BTCUSDT)
+    :param interval: Time interval (e.g., 1h, 1d)
+    :param start_time: Start time in milliseconds
+    :param end_time: End time in milliseconds
+    :return: DataFrame with historical data
+    """
+    response = requests.get(f'{api_url}/klines', params={
+        'symbol': symbol,
+        'interval': interval,
+        'startTime': start_time,
+        'endTime': end_time
+    })
+    response.raise_for_status()
+    data = response.json()
+    df = pd.DataFrame(data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'close_time', 'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 'taker_buy_quote_asset_volume', 'ignore'])
+    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+    return df
+
+# Example usage:
+# historical_data = fetch_historical_data('https://api.binance.com/api/v3', 'BTCUSDT', '1d', 1609459200000, 1612137600000)
+# print(historical_data)
